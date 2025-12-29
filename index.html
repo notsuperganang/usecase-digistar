@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>TelcoCare AI Chatbot - Customer Care</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="app-header" role="banner">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true"></div>
+        <div class="brand-text">
+          <h1 class="brand-title">TelcoCare AI</h1>
+          <p class="brand-subtitle">Chatbot Customer Care</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="top-nav" role="navigation" aria-label="Navigasi utama">
+        <button class="nav-btn active" data-view="chat" aria-controls="view-chat">Chat</button>
+        <button class="nav-btn" data-view="help" aria-controls="view-help">Bantuan</button>
+      </nav>
+    </header>
+
+    <main id="app" class="chat-app" aria-label="Aplikasi Chatbot TelcoCare AI">
+      <!-- View: Chatbot Utama -->
+      <section id="view-chat" class="view active" aria-label="Chatbot">
+        <div class="chat-shell">
+          <!-- Panel Chat -->
+          <section class="panel chat-panel" aria-label="Panel percakapan">
+            <header class="panel-header">
+              <h2 class="panel-title">Percakapan</h2>
+              <div class="badges-wrap">
+                <!-- Badge intent terakhir (diisi oleh app.js) -->
+                <span id="last-intent-badge" class="badge intent" aria-live="polite">Intent: -</span>
+              </div>
+            </header>
+
+            <!-- Area Percakapan -->
+            <section
+              id="messages"
+              class="messages"
+              aria-live="polite"
+              aria-relevant="additions text"
+              aria-label="Pesan percakapan"
+            ></section>
+
+            <!-- Loading / Typing Indicator -->
+            <div id="chat-loading" class="typing-indicator hidden" role="status" aria-live="polite" aria-label="AI sedang mengetik">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+
+            <!-- Placeholder Suggestions -->
+            <div class="chat-suggestions" aria-label="Saran cepat">
+              <button class="chip suggest" data-text="Masalah jaringan">Masalah jaringan</button>
+              <button class="chip suggest" data-text="Tagihan tidak sesuai">Tagihan tidak sesuai</button>
+              <button class="chip suggest" data-text="Aktivasi paket internet">Aktivasi paket internet</button>
+              <button class="chip suggest" data-text="Roaming & International Call">Roaming & International Call</button>
+            </div>
+
+            <!-- Input Composer -->
+            <form id="chat-form" class="chat-composer" autocomplete="off" aria-label="Kirim pesan ke chatbot">
+              <input
+                id="chat-input"
+                class="composer-input"
+                type="text"
+                placeholder="Tulis pertanyaan atau keluhan Anda di sini..."
+                aria-label="Bidang input pesan"
+              />
+              <div class="composer-actions">
+                <button id="chat-voice" type="button" class="btn" aria-label="Rekam suara (opsional)">🎤</button>
+                <button id="chat-send" type="submit" class="btn primary" aria-label="Kirim pesan">Kirim</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- Ringkasan (opsional, diperbarui oleh AI) -->
+          <section class="panel" aria-label="Ringkasan jawaban (opsional)">
+            <header class="panel-header">
+              <h3 class="panel-title">Ringkasan Singkat</h3>
+            </header>
+            <p id="chat-summary" class="summary-text" data-empty="true"><em class="muted">Ringkasan akan muncul di sini.</em></p>
+          </section>
+        </div>
+      </section>
+
+      <!-- View: Halaman Bantuan (Opsional) -->
+      <section id="view-help" class="view" aria-label="Bantuan">
+        <div class="help-grid">
+          <section class="panel" aria-label="FAQ Singkat">
+            <header class="panel-header">
+              <h3 class="panel-title">FAQ Singkat</h3>
+            </header>
+            <div class="faq">
+              <details>
+                <summary>Bagaimana cara cek tagihan saya?</summary>
+                <p>Buka aplikasi Telco resmi, masuk ke menu "Tagihan" untuk melihat rincian dan riwayat pembayaran.</p>
+              </details>
+              <details>
+                <summary>Internet saya lambat, apa yang harus dilakukan?</summary>
+                <p>Coba aktif/nonaktifkan mode pesawat, pastikan APN standar, dan uji di lokasi berbeda. Jika tetap lambat, hubungi kami.</p>
+              </details>
+              <details>
+                <summary>Bagaimana mengaktifkan paket roaming?</summary>
+                <p>Pastikan paket roaming aktif di aplikasi, aktifkan roaming data di perangkat, dan pilih jaringan mitra yang direkomendasikan.</p>
+              </details>
+            </div>
+          </section>
+
+          <section class="panel" aria-label="Informasi Kontak Customer Care">
+            <header class="panel-header">
+              <h3 class="panel-title">Kontak Customer Care</h3>
+            </header>
+            <div class="contact">
+              <p>Telepon: 123 (dari nomor Telco) atau 0800-XXX-XXXX</p>
+              <p>Email: care@telcocare.id</p>
+              <p>WhatsApp: +62 8XX-XXXX-XXXX</p>
+            </div>
+          </section>
+
+          <section class="panel" aria-label="Layanan Resmi">
+            <header class="panel-header">
+              <h3 class="panel-title">Layanan Resmi</h3>
+            </header>
+            <ul class="links">
+              <li><a href="#" rel="noopener">Aplikasi Telco</a></li>
+              <li><a href="#" rel="noopener">Pusat Bantuan</a></li>
+              <li><a href="#" rel="noopener">Cek Promo</a></li>
+            </ul>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script defer src="app.js"></script>
+    <noscript>Aplikasi ini memerlukan JavaScript untuk berfungsi.</noscript>
+  </body>
+</html>
