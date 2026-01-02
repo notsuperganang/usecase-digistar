@@ -3,14 +3,16 @@
  *
  * Main endpoint that orchestrates the entire pipeline:
  * 1. Validate request
- * 2. Call ML microservice
- * 3. Call Gemini (judge + respond in one call)
- * 4. Return flat JSON response
+ * 2. Translate Indonesian to English (for ML processing)
+ * 3. Call ML microservice with English text
+ * 4. Call Gemini (judge + respond in Indonesian)
+ * 5. Return flat JSON response
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { mlServiceClient } from '@/lib/ml-service';
 import { geminiClient } from '@/lib/gemini-client';
+import { translationClient } from '@/lib/translation-client';
 import { logger } from '@/lib/logger';
 import type { LLMJudgeSuccessResponse, LLMJudgeErrorResponse } from '@/types/api-response';
 
@@ -68,10 +70,29 @@ export async function POST(request: NextRequest) {
 
     logger.info('LLM-judge pipeline started', { ticket_id });
 
-    // Step 1: Call ML microservice
+    // Step 1: Translate Indonesian to English for ML processing
+    let translationResult;
+    try {
+      translationResult = await translationClient.translateToEnglish(text, ticket_id);
+    } catch (error) {
+      const errorResponse: LLMJudgeErrorResponse = {
+        error: 'Translation Error',
+        error_message: error instanceof Error ? error.message : 'Failed to translate text',
+        error_stage: 'translation',
+        error_details: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString(),
+      };
+
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
+    // Step 2: Call ML microservice with English translation
     let mlResponse;
     try {
-      mlResponse = await mlServiceClient.predict({ text, ticket_id });
+      mlResponse = await mlServiceClient.predict({
+        text: translationResult.translatedText,
+        ticket_id
+      });
     } catch (error) {
       const errorResponse: LLMJudgeErrorResponse = {
         error: 'ML Service Error',
@@ -84,11 +105,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 503 });
     }
 
-    // Step 2: Call Gemini (judge + response in one call)
+    // Step 3: Call Gemini (judge + respond in one call) with both original and translated text
     let llmResult;
     try {
       llmResult = await geminiClient.judgeAndRespond(
-        text,
+        text,                                   // Original Indonesian text
+        translationResult.translatedText,       // English translation for context
         mlResponse.prediction,
         ticket_id
       );
@@ -130,6 +152,7 @@ export async function POST(request: NextRequest) {
       customer_response: llmResult.judgment.customer_response,
 
       // Processing metadata
+      translation_processing_time_ms: translationResult.processingTimeMs,
       ml_processing_time_ms: mlResponse.processing_time_ms || 0,
       llm_processing_time_ms: llmResult.processingTimeMs,
       total_processing_time_ms: totalProcessingTime,
