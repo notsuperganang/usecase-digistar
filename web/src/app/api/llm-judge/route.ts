@@ -6,7 +6,8 @@
  * 2. Translate Indonesian to English (for ML processing)
  * 3. Call ML microservice with English text
  * 4. Call Gemini (judge + respond in Indonesian)
- * 5. Return flat JSON response
+ * 5. Save result to database (fire-and-forget)
+ * 6. Return flat JSON response
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -14,6 +15,7 @@ import { mlServiceClient } from '@/lib/ml-service';
 import { geminiClient } from '@/lib/gemini-client';
 import { translationClient } from '@/lib/translation-client';
 import { logger } from '@/lib/logger';
+import { saveTicketResult } from '@/lib/supabase-client';
 import type { LLMJudgeSuccessResponse, LLMJudgeErrorResponse } from '@/types/api-response';
 
 // Request body validation
@@ -144,6 +146,7 @@ export async function POST(request: NextRequest) {
       // LLM judgment (flattened)
       llm_ml_valid: llmResult.judgment.ml_valid,
       llm_confidence_assessment: llmResult.judgment.ml_confidence_assessment,
+      llm_issue_category: llmResult.judgment.issue_category,
       llm_reasoning: llmResult.judgment.reasoning,
       llm_recommended_action: llmResult.judgment.recommended_action,
       llm_tone: llmResult.judgment.tone,
@@ -163,6 +166,44 @@ export async function POST(request: NextRequest) {
       ticket_id,
       ml_valid: llmResult.judgment.ml_valid,
       total_time_ms: totalProcessingTime,
+    });
+
+    // Save to database (fire-and-forget pattern - don't block response)
+    saveTicketResult({
+      // Request data
+      ticket_id,
+      ticket_text: text,
+      translated_text: translationResult.translatedText,
+
+      // ML prediction results
+      ml_cluster: mlResponse.prediction.cluster,
+      ml_urgency: mlResponse.prediction.urgency,
+      ml_priority: mlResponse.prediction.priority,
+      ml_confidence: mlResponse.prediction.confidence,
+      ml_auto_escalate: mlResponse.prediction.auto_escalate,
+
+      // LLM judgment results
+      llm_ml_valid: llmResult.judgment.ml_valid,
+      llm_confidence_assessment: llmResult.judgment.ml_confidence_assessment,
+      llm_issue_category: llmResult.judgment.issue_category,
+      llm_reasoning: llmResult.judgment.reasoning,
+      llm_recommended_action: llmResult.judgment.recommended_action,
+      llm_tone: llmResult.judgment.tone,
+
+      // Customer response
+      customer_response: llmResult.judgment.customer_response,
+
+      // Performance metrics (convert to integers for database)
+      translation_time_ms: Math.round(translationResult.processingTimeMs),
+      ml_processing_time_ms: Math.round(mlResponse.processing_time_ms || 0),
+      llm_processing_time_ms: Math.round(llmResult.processingTimeMs),
+      total_processing_time_ms: Math.round(totalProcessingTime),
+    }).catch((error) => {
+      // Log error but don't fail the request
+      logger.error('Background database save failed', {
+        ticket_id,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
     });
 
     return NextResponse.json(successResponse, { status: 200 });
