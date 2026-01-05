@@ -20,6 +20,7 @@ export interface LLMJudgeSuccessResponse {
   // LLM judgment (flattened)
   llm_ml_valid: boolean;
   llm_confidence_assessment: string;
+  llm_issue_category: string;
   llm_reasoning: string;
   llm_recommended_action: string;
   llm_tone: string;
