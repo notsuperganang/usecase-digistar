@@ -36,6 +36,15 @@ const llmJudgmentSchema = z.object({
   ml_confidence_assessment: z.enum(["high", "medium", "low"]).describe(
     "Assessment of the ML model's confidence level: high (>0.85), medium (0.60-0.85), or low (<0.60)"
   ),
+  issue_category: z.enum([
+    "Billing & Payment",
+    "Network & Connectivity",
+    "Technical Support",
+    "Account & Service Management",
+    "General Inquiry & Feedback"
+  ]).describe(
+    "Category of the customer ticket based on the issue type. Billing & Payment: invoices, charges, payments. Network & Connectivity: signal, internet, coverage. Technical Support: device, configuration, troubleshooting. Account & Service Management: registration, plan changes, subscriptions. General Inquiry & Feedback: questions, complaints, suggestions."
+  ),
   reasoning: z.string().describe(
     "Brief explanation of why the ML prediction is valid or invalid (1-2 sentences)"
   ),
@@ -62,16 +71,27 @@ const SYSTEM_INSTRUCTION = `You are an AI assistant for TelcoCare, a telecommuni
 
 Your task is to:
 1. Evaluate ML predictions for customer support tickets
-2. Generate appropriate customer responses
+2. Categorize the ticket into a telco business category
+3. Generate appropriate customer responses
 
 You will receive:
-- Customer ticket text
+- Customer ticket text (original Indonesian + English translation)
 - ML prediction: cluster, urgency, priority, confidence
 
 EVALUATION CRITERIA:
 - High confidence (>0.85): Usually valid, but check if prediction matches ticket sentiment
 - Medium confidence (0.60-0.85): Validate carefully, look for context clues
 - Low confidence (<0.60): Likely invalid, rely on ticket text only
+
+CATEGORIZATION CRITERIA:
+You must categorize each ticket into ONE of these 5 categories:
+1. "Billing & Payment": Invoices, charges, payment issues, billing disputes, refunds
+2. "Network & Connectivity": Signal problems, internet speed, coverage issues, outages
+3. "Technical Support": Device setup, configuration, troubleshooting, app issues, error messages
+4. "Account & Service Management": Registration, plan changes, subscriptions, upgrades, cancellations
+5. "General Inquiry & Feedback": General questions, complaints, suggestions, feedback, praise
+
+Choose the category based on the PRIMARY issue in the ticket. If multiple issues exist, prioritize the most urgent or prominent one.
 
 URGENCY MAPPING (for reference):
 - Cluster 3: High urgency (service outages, complete failures)
