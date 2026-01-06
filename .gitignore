@@ -3,6 +3,12 @@
 .mcp.json
 CLAUDE.md
 
+# Supabase temp files
+web/supabase/.temp
+
+# Docs
+DESIGN_GUIDE.md
+
 # Python
 __pycache__/
 *.py[cod]
