@@ -11,3 +11,4 @@ joblib
 
 # Utilities
 python-dotenv
+requests
