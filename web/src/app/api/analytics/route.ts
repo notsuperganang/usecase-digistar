@@ -138,7 +138,7 @@ async function getWeeklySummary(days: number) {
   const totalAutoEscalated = data.filter((t: any) => t.ml_auto_escalate).length;
   const avgConfidence = totalTickets > 0
     ? (data.reduce((sum: number, t: any) => sum + (t.ml_confidence || 0), 0) / totalTickets).toFixed(4)
-    : 0;
+    : "0.0000";
   const avgProcessingTime = totalTickets > 0
     ? Math.round(data.reduce((sum: number, t: any) => sum + (t.total_processing_time_ms || 0), 0) / totalTickets)
     : 0;
