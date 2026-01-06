@@ -30,7 +30,6 @@ USER appuser
 ENV PORT=8080
 EXPOSE 8080
 
-
 # Run the application
 # Cloud Run will provide PORT env variable
 CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080}
