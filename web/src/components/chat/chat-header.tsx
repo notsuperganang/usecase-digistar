@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Trash2, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { chatTokens } from "@/lib/design-tokens";
@@ -59,6 +60,14 @@ export function ChatHeader({ onClearChat, messageCount = 0 }: ChatHeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
+          {/* Dashboard link */}
+          <Link href="/cs-dashboard">
+            <Button variant="ghost" size="sm">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Dashboard
+            </Button>
+          </Link>
+
           {/* Message count badge */}
           {messageCount > 0 && (
             <Badge variant="secondary" className="tabular-nums">
