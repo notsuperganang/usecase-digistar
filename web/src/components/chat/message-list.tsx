@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MessageSquare } from "lucide-react";
+import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageBubble } from "./message-bubble";
 import { TypingIndicator } from "./typing-indicator";
+import { HoverEffect } from "@/components/ui/card-hover-effect";
 import { chatTokens } from "@/lib/design-tokens";
 import type { Message } from "@/types/chat";
 
@@ -12,6 +13,7 @@ interface MessageListProps {
   messages: Message[];
   isLoading: boolean;
   onRetry?: (messageId: string) => void;
+  onTemplateClick?: (message: string) => void;
 }
 
 /**
@@ -25,7 +27,7 @@ interface MessageListProps {
  * - Typing indicator during loading
  */
 
-export function MessageList({ messages, isLoading, onRetry }: MessageListProps) {
+export function MessageList({ messages, isLoading, onRetry, onTemplateClick }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -38,24 +40,64 @@ export function MessageList({ messages, isLoading, onRetry }: MessageListProps) 
 
   // Empty state
   if (messages.length === 0 && !isLoading) {
+    const templateMessages = [
+      {
+        title: "Masalah Internet",
+        description: "Internet rumah saya mati total sejak pagi ini",
+        link: "#internet",
+      },
+      {
+        title: "Informasi Tagihan",
+        description: "Bagaimana cara mengecek dan membayar tagihan bulanan?",
+        link: "#tagihan",
+      },
+      {
+        title: "Upgrade Paket",
+        description: "Saya ingin upgrade paket internet ke kecepatan lebih tinggi",
+        link: "#upgrade",
+      },
+    ];
+
+    const handleCardClick = (description: string) => {
+      if (onTemplateClick) {
+        onTemplateClick(description);
+      }
+    };
+
     return (
       <div className={chatTokens.layout.messageList}>
-        <div className="flex flex-col items-center justify-center h-full text-center">
-          <div className="rounded-full bg-muted p-6 mb-4">
-            <MessageSquare className="h-12 w-12 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center h-full py-8">
+          {/* Logo and Welcome */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              <div className="bg-white rounded-xl p-3 shadow-md">
+                <Image
+                  src="/icon-telkom.png"
+                  alt="Telkom"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Selamat Datang di TelcoCare</h2>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Sampaikan keluhan atau pertanyaan Anda, dan kami akan membantu
+              menyelesaikannya dengan cepat.
+            </p>
           </div>
-          <h2 className="text-xl font-semibold mb-2">Selamat Datang di TelcoCare</h2>
-          <p className="text-sm text-muted-foreground max-w-md">
-            Sampaikan keluhan atau pertanyaan Anda, dan kami akan membantu
-            menyelesaikannya dengan cepat.
-          </p>
-          <div className="mt-6 space-y-2 text-sm text-muted-foreground">
-            <p className="font-medium">Contoh pertanyaan:</p>
-            <ul className="space-y-1">
-              <li>• &quot;Internet rumah saya mati total&quot;</li>
-              <li>• &quot;Bagaimana cara mengecek tagihan?&quot;</li>
-              <li>• &quot;Saya ingin upgrade paket&quot;</li>
-            </ul>
+
+          {/* Template Messages with Hover Effect */}
+          <div className="w-full max-w-4xl px-4">
+            <p className="text-sm font-medium text-center mb-4 text-muted-foreground">
+              Contoh pertanyaan:
+            </p>
+            <HoverEffect 
+              items={templateMessages} 
+              className="grid-cols-1 md:grid-cols-3"
+              onCardClick={handleCardClick}
+            />
           </div>
         </div>
       </div>
