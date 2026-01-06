@@ -7,6 +7,12 @@
 
 interface ApiResponse {
   customer_response: string;
+  // Escalation fields
+  ml_auto_escalate?: boolean;
+  ml_urgency?: string;
+  ml_priority?: string;
+  llm_ml_valid?: boolean;
+  llm_recommended_action?: string;
   // Other fields exist but are hidden from chat UI
 }
 
@@ -16,14 +22,24 @@ interface ApiError {
   details?: string;
 }
 
+export interface ChatApiResponse {
+  response: string;
+  escalation?: {
+    triggered: boolean;
+    urgency: string;
+    priority: string;
+    reason: 'ml' | 'llm';
+  };
+}
+
 /**
  * Send chat message to LLM judge endpoint
  *
  * @param text - Customer message text (Indonesian)
- * @returns Indonesian customer response text
+ * @returns Response with customer message and escalation metadata
  * @throws Error with user-friendly Indonesian message
  */
-export async function sendChatMessage(text: string): Promise<string> {
+export async function sendChatMessage(text: string): Promise<ChatApiResponse> {
   try {
     const response = await fetch('/api/llm-judge', {
       method: 'POST',
@@ -43,8 +59,28 @@ export async function sendChatMessage(text: string): Promise<string> {
       throw new Error(getUserFriendlyError(data as ApiError));
     }
 
-    // Return ONLY customer_response (Indonesian)
-    return (data as ApiResponse).customer_response;
+    const apiData = data as ApiResponse;
+
+    // Check escalation conditions
+    const isEscalatedByML = 
+      apiData.ml_auto_escalate === true && 
+      apiData.llm_ml_valid === true;
+    
+    const isEscalatedByLLM = 
+      apiData.llm_recommended_action === 'escalate';
+
+    const isEscalated = isEscalatedByML || isEscalatedByLLM;
+
+    // Return customer response with escalation metadata
+    return {
+      response: apiData.customer_response,
+      escalation: isEscalated ? {
+        triggered: true,
+        urgency: apiData.ml_urgency || 'High',
+        priority: apiData.ml_priority || 'P1',
+        reason: isEscalatedByML ? 'ml' : 'llm',
+      } : undefined,
+    };
   } catch (error) {
     // Network or parsing errors
     if (error instanceof Error) {
