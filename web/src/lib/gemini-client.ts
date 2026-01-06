@@ -57,6 +57,15 @@ const llmJudgmentSchema = z.object({
   tone: z.enum(["empathetic", "professional", "urgent", "friendly"]).describe(
     "Tone of the customer response based on urgency: empathetic/urgent for high, professional for medium, friendly for low"
   ),
+  keywords: z.array(z.string()).min(5).max(10).describe(
+    "Extract 5-10 semantically important Indonesian keywords or short phrases from the original ticket. " +
+    "These keywords will be used for weekly analytics to identify top customer issues. " +
+    "Focus on: problem indicators (internet mati, tagihan salah), product names (IndiHome, fiber), " +
+    "emotions (kecewa, urgent), technical terms (modem, router). " +
+    "Return actual Indonesian words from the ticket, not English translations. " +
+    "Prefer specific multi-word phrases over single words (e.g., 'internet mati' > 'internet'). " +
+    "Each keyword should be 2-50 characters. Avoid stopwords and gibberish."
+  ),
 });
 
 // Export the type inferred from schema
@@ -73,6 +82,7 @@ Your task is to:
 1. Evaluate ML predictions for customer support tickets
 2. Categorize the ticket into a telco business category
 3. Generate appropriate customer responses
+4. Extract keywords for analytics
 
 You will receive:
 - Customer ticket text (original Indonesian + English translation)
@@ -92,6 +102,23 @@ You must categorize each ticket into ONE of these 5 categories:
 5. "General Inquiry & Feedback": General questions, complaints, suggestions, feedback, praise
 
 Choose the category based on the PRIMARY issue in the ticket. If multiple issues exist, prioritize the most urgent or prominent one.
+
+KEYWORD EXTRACTION CRITERIA:
+Extract 5-10 important Indonesian keywords or phrases from the ORIGINAL Indonesian ticket text.
+
+Keywords should help CS team identify trending issues across tickets:
+- Problem indicators: internet mati, sinyal lemot, tagihan salah, pulsa habis
+- Service names: IndiHome, fiber, WiFi, paket internet
+- Technical terms: modem, router, aplikasi, instalasi
+- Emotions/urgency: kecewa, urgent, penting, komplain, lapor
+- Billing terms: tagihan, bayar, kuota, saldo, refund
+
+Guidelines:
+1. Prefer multi-word phrases over single words (e.g., "internet mati" > "mati")
+2. Use actual words from the Indonesian ticket (not English)
+3. Each keyword: 2-50 characters, no gibberish
+4. Skip common stopwords (yang, untuk, saya, mohon, terima kasih)
+5. Focus on terms useful for aggregating similar issues across tickets
 
 URGENCY MAPPING (for reference):
 - Cluster 3: High urgency (service outages, complete failures)
