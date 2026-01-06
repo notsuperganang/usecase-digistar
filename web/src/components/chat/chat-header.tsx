@@ -72,7 +72,7 @@ export function ChatHeader({ onClearChat, messageCount = 0 }: ChatHeaderProps) {
               variant="ghost"
               size="icon"
               onClick={handleClearClick}
-              className="text-muted-foreground hover:text-destructive"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all hover:scale-110"
               aria-label="Hapus riwayat chat"
             >
               <Trash2 className="h-4 w-4" />
