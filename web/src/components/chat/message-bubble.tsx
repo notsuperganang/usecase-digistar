@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { chatTokens } from "@/lib/design-tokens";
 import { messageFadeIn } from "@/lib/chat-animations";
+import { EscalationCard } from "./escalation-card";
 import type { Message } from "@/types/chat";
 
 interface MessageBubbleProps {
@@ -69,6 +70,15 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
             {formatTime(message.timestamp)}
           </div>
         </div>
+
+        {/* Escalation Card (only for AI messages) */}
+        {!isUser && message.escalation?.triggered && (
+          <EscalationCard
+            urgency={message.escalation.urgency}
+            priority={message.escalation.priority}
+            reason={message.escalation.reason}
+          />
+        )}
 
         {/* Error message with retry */}
         {isError && message.error && (
